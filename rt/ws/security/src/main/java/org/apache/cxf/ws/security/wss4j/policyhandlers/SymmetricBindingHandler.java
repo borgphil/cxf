@@ -932,7 +932,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
 
         // Set the SHA1 value of the encrypted key, this is used when the encrypted
         // key is referenced via a key identifier of type EncryptedKeySHA1
-        tempTok.setSHA1(getSHA1(encrKey.getEncryptedEphemeralKey()));
+        tempTok.setSHA1(encrKey.getEncryptedKeySHA1());
         tokenStore.add(tempTok);
 
         // Create another cache entry with the SHA1 Identifier as the key for easy retrieval
