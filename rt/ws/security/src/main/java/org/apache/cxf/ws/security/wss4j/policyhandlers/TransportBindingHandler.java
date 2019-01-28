@@ -383,7 +383,7 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
             AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
             dkSig.setDerivedKeyLength(algType.getSignatureDerivedKeyLength() / 8);
 
-            dkSig.setExternalKey(encrKey.getEphemeralKey(), encrKey.getId());
+            dkSig.setExternalKey(encrKey.getSymmetricKey().getEncoded(), encrKey.getId());
 
             dkSig.prepare();
 

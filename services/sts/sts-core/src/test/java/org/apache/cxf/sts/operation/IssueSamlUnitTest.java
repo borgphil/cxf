@@ -841,7 +841,7 @@ public class IssueSamlUnitTest {
 
         builder.prepare(stsProperties.getSignatureCrypto());
         Element encryptedKeyElement = builder.getEncryptedKeyElement();
-        byte[] secret = builder.getEphemeralKey();
+        byte[] secret = builder.getSymmetricKey().getEncoded();
 
         EntropyType entropyType = new EntropyType();
         entropyType.getAny().add(encryptedKeyElement);

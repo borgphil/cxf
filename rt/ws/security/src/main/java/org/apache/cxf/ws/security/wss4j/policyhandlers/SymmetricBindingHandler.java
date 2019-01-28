@@ -551,6 +551,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
                     encr.setCustomReferenceValue(encrTok.getTokenType());
                 }
                 encr.setEncKeyId(encrTokId);
+                encr.setSymmetricEncAlgorithm(algorithmSuite.getAlgorithmSuiteType().getEncryption());
                 encr.setEphemeralKey(encrTok.getSecret());
                 Crypto crypto = getEncryptionCrypto();
                 if (crypto != null) {
@@ -558,7 +559,6 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
                 }
 
                 encr.setEncryptSymmKey(false);
-                encr.setSymmetricEncAlgorithm(algorithmSuite.getAlgorithmSuiteType().getEncryption());
                 encr.setMGFAlgorithm(algorithmSuite.getAlgorithmSuiteType().getMGFAlgo());
                 encr.setDigestAlgorithm(algorithmSuite.getAlgorithmSuiteType().getEncryptionDigest());
 
@@ -917,7 +917,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
         WSSecEncryptedKey encrKey = this.getEncryptedKeyBuilder(sigToken);
         assertTokenWrapper(wrapper);
         String id = encrKey.getId();
-        byte[] secret = encrKey.getEphemeralKey();
+        byte[] secret = encrKey.getSymmetricKey().getEncoded();
 
         Instant created = Instant.now();
         Instant expires = created.plusSeconds(WSS4JUtils.getSecurityTokenLifetime(message) / 1000L);

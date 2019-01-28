@@ -806,7 +806,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
 
         // Add the EncryptedKey
         this.addEncryptedKeyElement(encrKey.getEncryptedKeyElement());
-        encryptedKeyValue = encrKey.getEphemeralKey();
+        encryptedKeyValue = encrKey.getSymmetricKey().getEncoded();
         encryptedKeyId = encrKey.getId();
     }
 
