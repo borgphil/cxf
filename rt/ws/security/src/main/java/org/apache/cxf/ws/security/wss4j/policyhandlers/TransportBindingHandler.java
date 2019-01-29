@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.xml.crypto.dsig.Reference;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -51,6 +53,7 @@ import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.token.SecurityTokenReference;
+import org.apache.wss4j.common.util.KeyUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.wss4j.dom.message.WSSecDKSign;
@@ -357,7 +360,11 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
             signPartsAndElements(wrapper.getSignedParts(), wrapper.getSignedElements());
 
         if (token.getDerivedKeys() == DerivedKeys.RequireDerivedKeys) {
-            WSSecEncryptedKey encrKey = getEncryptedKeyBuilder(token);
+            AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
+            KeyGenerator keyGen = KeyUtils.getKeyGenerator(algType.getEncryption());
+            SecretKey symmetricKey = keyGen.generateKey();
+
+            WSSecEncryptedKey encrKey = getEncryptedKeyBuilder(token, symmetricKey);
             assertPolicy(wrapper);
 
             Element bstElem = encrKey.getBinarySecurityTokenElement();
@@ -380,10 +387,9 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
             dkSig.setExpandXopInclude(isExpandXopInclude());
             dkSig.setWsDocInfo(wsDocInfo);
 
-            AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
             dkSig.setDerivedKeyLength(algType.getSignatureDerivedKeyLength() / 8);
 
-            dkSig.setExternalKey(encrKey.getSymmetricKey().getEncoded(), encrKey.getId());
+            dkSig.setExternalKey(symmetricKey.getEncoded(), encrKey.getId());
 
             dkSig.prepare();
 

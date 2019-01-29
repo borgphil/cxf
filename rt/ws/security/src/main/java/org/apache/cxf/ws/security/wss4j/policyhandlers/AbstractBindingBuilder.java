@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
 import javax.xml.XMLConstants;
 import javax.xml.crypto.dsig.Reference;
@@ -1501,7 +1502,8 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
         return null;
     }
 
-    protected WSSecEncryptedKey getEncryptedKeyBuilder(AbstractToken token) throws WSSecurityException {
+    protected WSSecEncryptedKey getEncryptedKeyBuilder(AbstractToken token,
+                                                       SecretKey symmetricKey) throws WSSecurityException {
         WSSecEncryptedKey encrKey = new WSSecEncryptedKey(secHeader);
         encrKey.setIdAllocator(wssConfig.getIdAllocator());
         encrKey.setCallbackLookup(callbackLookup);
@@ -1522,11 +1524,10 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
         String encrUser = setEncryptionUser(encrKey, token, false, crypto);
 
         AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
-        encrKey.setSymmetricEncAlgorithm(algType.getEncryption());
         encrKey.setKeyEncAlgo(algType.getAsymmetricKeyWrap());
         encrKey.setMGFAlgorithm(algType.getMGFAlgo());
 
-        encrKey.prepare(crypto);
+        encrKey.prepare(crypto, symmetricKey);
 
         if (alsoIncludeToken) {
             X509Certificate encCert = getEncryptCert(crypto, encrUser);

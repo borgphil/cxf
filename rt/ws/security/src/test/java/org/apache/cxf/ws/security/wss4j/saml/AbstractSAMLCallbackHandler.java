@@ -23,6 +23,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,6 +42,7 @@ import org.apache.wss4j.common.saml.bean.AuthenticationStatementBean;
 import org.apache.wss4j.common.saml.bean.KeyInfoBean;
 import org.apache.wss4j.common.saml.bean.KeyInfoBean.CERT_IDENTIFIER;
 import org.apache.wss4j.common.saml.bean.SubjectBean;
+import org.apache.wss4j.common.util.KeyUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.message.WSSecEncryptedKey;
 
@@ -170,7 +173,10 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             WSSecEncryptedKey encrKey = new WSSecEncryptedKey(doc);
             encrKey.setKeyIdentifierType(WSConstants.X509_KEY_IDENTIFIER);
             encrKey.setUseThisCert(certs[0]);
-            encrKey.prepare(null);
+
+            KeyGenerator keyGen = KeyUtils.getKeyGenerator(WSConstants.AES_128);
+            SecretKey symmetricKey = keyGen.generateKey();
+            encrKey.prepare(null, symmetricKey);
             Element encryptedKeyElement = encrKey.getEncryptedKeyElement();
 
             // Append the EncryptedKey to a KeyInfo element
