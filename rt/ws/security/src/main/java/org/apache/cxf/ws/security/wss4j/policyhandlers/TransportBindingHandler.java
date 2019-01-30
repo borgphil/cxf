@@ -21,6 +21,7 @@ package org.apache.cxf.ws.security.wss4j.policyhandlers;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,6 +55,7 @@ import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.token.SecurityTokenReference;
 import org.apache.wss4j.common.util.KeyUtils;
+import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.wss4j.dom.message.WSSecDKSign;
@@ -334,9 +336,11 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
             addSig(doIssuedTokenSignature(token, wrapper));
         } else if (token instanceof UsernameToken) {
             // Create a UsernameToken object for derived keys and store the security token
-            WSSecUsernameToken usernameToken = addDKUsernameToken((UsernameToken)token, true);
+            byte[] salt = UsernameTokenUtil.generateSalt(true);
+            WSSecUsernameToken usernameToken = addDKUsernameToken((UsernameToken)token, salt, true);
             String id = usernameToken.getId();
-            byte[] secret = usernameToken.getDerivedKey();
+            byte[] secret = usernameToken.getDerivedKey(salt);
+            Arrays.fill(salt, (byte)0);
 
             Instant created = Instant.now();
             Instant expires = created.plusSeconds(WSS4JUtils.getSecurityTokenLifetime(message) / 1000L);

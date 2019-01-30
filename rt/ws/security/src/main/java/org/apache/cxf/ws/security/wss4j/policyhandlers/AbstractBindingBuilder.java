@@ -103,6 +103,7 @@ import org.apache.wss4j.common.token.BinarySecurity;
 import org.apache.wss4j.common.token.SecurityTokenReference;
 import org.apache.wss4j.common.token.X509Security;
 import org.apache.wss4j.common.util.Loader;
+import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.common.util.XMLUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WSDocInfo;
@@ -610,19 +611,20 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
     protected void handleUsernameTokenSupportingToken(
         UsernameToken token, boolean endorse, boolean encryptedToken, List<SupportingToken> ret
     ) throws WSSecurityException {
-        if (endorse) {
-            WSSecUsernameToken utBuilder = addDKUsernameToken(token, true);
+        if (endorse && isTokenRequired(token.getIncludeTokenType())) {
+            byte[] salt = UsernameTokenUtil.generateSalt(true);
+            WSSecUsernameToken utBuilder = addDKUsernameToken(token, salt, true);
             if (utBuilder != null) {
-                utBuilder.prepare();
+                utBuilder.prepare(salt);
                 addSupportingElement(utBuilder.getUsernameTokenElement());
-                ret.add(new SupportingToken(token, utBuilder, null));
+                ret.add(new SupportingToken(token, utBuilder, null, salt));
                 if (encryptedToken) {
                     WSEncryptionPart part = new WSEncryptionPart(utBuilder.getId(), "Element");
                     part.setElement(utBuilder.getUsernameTokenElement());
                     encryptedTokensList.add(part);
                 }
             }
-        } else {
+        } else if (!endorse) {
             WSSecUsernameToken utBuilder = addUsernameToken(token);
             if (utBuilder != null) {
                 utBuilder.prepare();
@@ -862,7 +864,7 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
         return null;
     }
 
-    protected WSSecUsernameToken addDKUsernameToken(UsernameToken token, boolean useMac) {
+    protected WSSecUsernameToken addDKUsernameToken(UsernameToken token, byte[] salt, boolean useMac) {
         assertToken(token);
         if (!isTokenRequired(token.getIncludeTokenType())) {
             return null;
@@ -883,8 +885,8 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
             if (!StringUtils.isEmpty(password)) {
                 // If the password is available then build the token
                 utBuilder.setUserInfo(userName, password);
-                utBuilder.addDerivedKey(useMac, null, 1000);
-                utBuilder.prepare();
+                utBuilder.addDerivedKey(useMac,  1000);
+                utBuilder.prepare(salt);
             } else {
                 unassertPolicy(token, "No password available");
                 return null;
@@ -1990,8 +1992,9 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
                 }
 
                 try {
-                    byte[] secret = utBuilder.getDerivedKey();
+                    byte[] secret = utBuilder.getDerivedKey(supportingToken.getSalt());
                     secToken.setSecret(secret);
+                    Arrays.fill(supportingToken.getSalt(), (byte)0);
 
                     if (supportingToken.getToken().getDerivedKeys() == DerivedKeys.RequireDerivedKeys) {
                         doSymmSignatureDerived(supportingToken.getToken(), secToken, sigParts,
@@ -2355,12 +2358,19 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
         private final AbstractToken token;
         private final Object tokenImplementation;
         private final List<WSEncryptionPart> signedParts;
+        private final byte[] salt;
 
         SupportingToken(AbstractToken token, Object tokenImplementation,
-                               List<WSEncryptionPart> signedParts) {
+                        List<WSEncryptionPart> signedParts) {
+            this(token, tokenImplementation, signedParts, null);
+        }
+
+        SupportingToken(AbstractToken token, Object tokenImplementation,
+                               List<WSEncryptionPart> signedParts, byte[] salt) {
             this.token = token;
             this.tokenImplementation = tokenImplementation;
             this.signedParts = signedParts;
+            this.salt = salt;
         }
 
         public AbstractToken getToken() {
@@ -2373,6 +2383,10 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
 
         public List<WSEncryptionPart> getSignedParts() {
             return signedParts;
+        }
+
+        public byte[] getSalt() {
+            return salt;
         }
 
     }

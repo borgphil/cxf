@@ -21,6 +21,7 @@ package org.apache.cxf.ws.security.wss4j.policyhandlers;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -55,6 +56,7 @@ import org.apache.wss4j.common.derivedKey.ConversationConstants;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.token.SecurityTokenReference;
 import org.apache.wss4j.common.util.KeyUtils;
+import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.wss4j.dom.engine.WSSecurityEngineResult;
@@ -989,20 +991,26 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
     }
 
     private String setupUTDerivedKey(UsernameToken sigToken) throws WSSecurityException {
-        boolean useMac = hasSignedPartsOrElements();
-        WSSecUsernameToken usernameToken = addDKUsernameToken(sigToken, useMac);
-        String id = usernameToken.getId();
-        byte[] secret = usernameToken.getDerivedKey();
+        assertToken(sigToken);
+        if (isTokenRequired(sigToken.getIncludeTokenType())) {
+            boolean useMac = hasSignedPartsOrElements();
+            byte[] salt = UsernameTokenUtil.generateSalt(useMac);
+            WSSecUsernameToken usernameToken = addDKUsernameToken(sigToken, salt, useMac);
+            String id = usernameToken.getId();
+            byte[] secret = usernameToken.getDerivedKey(salt);
+            Arrays.fill(salt, (byte)0);
 
-        Instant created = Instant.now();
-        Instant expires = created.plusSeconds(WSS4JUtils.getSecurityTokenLifetime(message) / 1000L);
-        SecurityToken tempTok =
-            new SecurityToken(id, usernameToken.getUsernameTokenElement(), created, expires);
-        tempTok.setSecret(secret);
+            Instant created = Instant.now();
+            Instant expires = created.plusSeconds(WSS4JUtils.getSecurityTokenLifetime(message) / 1000L);
+            SecurityToken tempTok =
+                new SecurityToken(id, usernameToken.getUsernameTokenElement(), created, expires);
+            tempTok.setSecret(secret);
 
-        tokenStore.add(tempTok);
+            tokenStore.add(tempTok);
 
-        return id;
+            return id;
+        }
+        return null;
     }
 
     private SecurityToken getEncryptedKey() {
