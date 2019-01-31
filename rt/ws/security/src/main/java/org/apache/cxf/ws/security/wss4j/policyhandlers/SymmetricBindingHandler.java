@@ -452,13 +452,9 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
             }
 
             if (attached && encrTok.getAttachedReference() != null) {
-                dkEncr.setExternalKey(
-                    encrTok.getSecret(), cloneElement(encrTok.getAttachedReference())
-                );
+                dkEncr.setStrElem(cloneElement(encrTok.getAttachedReference()));
             } else if (encrTok.getUnattachedReference() != null) {
-                dkEncr.setExternalKey(
-                    encrTok.getSecret(), cloneElement(encrTok.getUnattachedReference())
-                );
+                dkEncr.setStrElem(cloneElement(encrTok.getUnattachedReference()));
             } else if (!isRequestor() && encrTok.getSHA1() != null) {
                 // If the Encrypted key used to create the derived key is not
                 // attached use key identifier as defined in WSS1.1 section
@@ -477,7 +473,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
                     }
                 }
                 tokenRef.addTokenType(tokenType);
-                dkEncr.setExternalKey(encrTok.getSecret(), tokenRef.getElement());
+                dkEncr.setStrElem(tokenRef.getElement());
             } else {
                 if (attached) {
                     String id = encrTok.getWsuId();
@@ -492,10 +488,10 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
                     if (id.startsWith("#")) {
                         id = id.substring(1);
                     }
-                    dkEncr.setExternalKey(encrTok.getSecret(), id);
+                    dkEncr.setTokenIdentifier(id);
                 } else {
                     dkEncr.setTokenIdDirectId(true);
-                    dkEncr.setExternalKey(encrTok.getSecret(), encrTok.getId());
+                    dkEncr.setTokenIdentifier(encrTok.getId());
                 }
             }
 
@@ -525,7 +521,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
             AlgorithmSuiteType algType = sbinding.getAlgorithmSuite().getAlgorithmSuiteType();
             dkEncr.setSymmetricEncAlgorithm(algType.getEncryption());
             dkEncr.setDerivedKeyLength(algType.getEncryptionDerivedKeyLength() / 8);
-            dkEncr.prepare();
+            dkEncr.prepare(encrTok.getSecret());
             Element encrDKTokenElem = null;
             encrDKTokenElem = dkEncr.getdktElement();
             addDerivedKeyElement(encrDKTokenElem);
@@ -701,7 +697,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
         }
 
         if (ref != null) {
-            dkSign.setExternalKey(tok.getSecret(), cloneElement(ref));
+            dkSign.setStrElem(cloneElement(ref));
         } else if (!isRequestor() && policyToken.getDerivedKeys()
             == DerivedKeys.RequireDerivedKeys && tok.getSHA1() != null) {
             // If the Encrypted key used to create the derived key is not
@@ -723,13 +719,13 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
                 }
                 tokenRef.addTokenType(tokenType);
             }
-            dkSign.setExternalKey(tok.getSecret(), tokenRef.getElement());
+            dkSign.setStrElem(tokenRef.getElement());
         } else {
             if ((!attached && !isRequestor()) || policyToken instanceof SecureConversationToken
                 || policyToken instanceof SecurityContextToken) {
                 dkSign.setTokenIdDirectId(true);
             }
-            dkSign.setExternalKey(tok.getSecret(), tok.getId());
+            dkSign.setTokenIdentifier(tok.getId());
         }
 
         //Set the algo info
@@ -769,7 +765,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
             }
         }
 
-        dkSign.prepare();
+        dkSign.prepare(tok.getSecret());
 
         if (sbinding.isProtectTokens()) {
             String sigTokId = tok.getId();

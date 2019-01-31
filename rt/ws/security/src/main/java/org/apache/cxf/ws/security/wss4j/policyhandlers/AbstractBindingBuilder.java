@@ -2043,7 +2043,7 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
 
         if (ref != null) {
             ref = cloneElement(ref);
-            dkSign.setExternalKey(tok.getSecret(), ref);
+            dkSign.setStrElem(ref);
         } else if (!isRequestor() && policyToken.getDerivedKeys() == DerivedKeys.RequireDerivedKeys) {
             // If the Encrypted key used to create the derived key is not
             // attached use key identifier as defined in WSS1.1 section
@@ -2054,10 +2054,10 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
                 tokenRef.setKeyIdentifierEncKeySHA1(tok.getSHA1());
                 tokenRef.addTokenType(WSS4JConstants.WSS_ENC_KEY_VALUE_TYPE);
             }
-            dkSign.setExternalKey(tok.getSecret(), tokenRef.getElement());
+            dkSign.setStrElem(tokenRef.getElement());
 
         } else {
-            dkSign.setExternalKey(tok.getSecret(), tok.getId());
+            dkSign.setTokenIdentifier(tok.getId());
         }
 
         //Set the algo info
@@ -2073,7 +2073,7 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
             dkSign.setCustomValueType(WSS4JConstants.WSS_USERNAME_TOKEN_VALUE_TYPE);
         }
 
-        dkSign.prepare();
+        dkSign.prepare(tok.getSecret());
 
         if (isTokenProtection) {
             String sigTokId = XMLUtils.getIDFromReference(tok.getId());

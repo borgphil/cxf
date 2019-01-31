@@ -597,7 +597,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
                 setupEncryptedKey(encrToken);
             }
 
-            dkEncr.setExternalKey(this.encryptedKeyValue, this.encryptedKeyId);
+            dkEncr.setTokenIdentifier(this.encryptedKeyId);
             dkEncr.getParts().addAll(encrParts);
             dkEncr.setCustomValueType(WSS4JConstants.SOAPMESSAGE_NS11 + "#"
                 + WSS4JConstants.ENC_KEY_VALUE_TYPE);
@@ -606,7 +606,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
             AlgorithmSuiteType algType = algorithmSuite.getAlgorithmSuiteType();
             dkEncr.setSymmetricEncAlgorithm(algType.getEncryption());
             dkEncr.setDerivedKeyLength(algType.getEncryptionDerivedKeyLength() / 8);
-            dkEncr.prepare();
+            dkEncr.prepare(this.encryptedKeyValue);
 
             addDerivedKeyElement(dkEncr.getdktElement());
             Element refList = dkEncr.encryptForExternalRef(null, encrParts);
@@ -681,7 +681,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
                 dkSign.setWscVersion(ConversationConstants.VERSION_05_02);
             }
 
-            dkSign.setExternalKey(this.encryptedKeyValue, this.encryptedKeyId);
+            dkSign.setTokenIdentifier(this.encryptedKeyId);
 
             // Set the algo info
             dkSign.setSignatureAlgorithm(abinding.getAlgorithmSuite().getSymmetricSignature());
@@ -699,7 +699,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
             dkSign.setAddInclusivePrefixes(includePrefixes);
 
             try {
-                dkSign.prepare();
+                dkSign.prepare(this.encryptedKeyValue);
 
                 if (abinding.isProtectTokens()) {
                     assertPolicy(

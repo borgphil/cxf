@@ -393,9 +393,9 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
 
             dkSig.setDerivedKeyLength(algType.getSignatureDerivedKeyLength() / 8);
 
-            dkSig.setExternalKey(symmetricKey.getEncoded(), encrKey.getId());
+            dkSig.setTokenIdentifier(encrKey.getId());
 
-            dkSig.prepare();
+            dkSig.prepare(symmetricKey.getEncoded());
 
             dkSig.getParts().addAll(sigParts);
             List<Reference> referenceList = dkSig.addReferencesToSign(sigParts);
@@ -488,9 +488,9 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
         }
 
         if (ref != null) {
-            dkSign.setExternalKey(secTok.getSecret(), cloneElement(ref));
+            dkSign.setStrElem(cloneElement(ref));
         } else {
-            dkSign.setExternalKey(secTok.getSecret(), secTok.getId());
+            dkSign.setTokenIdentifier(secTok.getId());
         }
 
         if (token instanceof UsernameToken) {
@@ -504,7 +504,7 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
         if (token.getVersion() == SPConstants.SPVersion.SP11) {
             dkSign.setWscVersion(ConversationConstants.VERSION_05_02);
         }
-        dkSign.prepare();
+        dkSign.prepare(secTok.getSecret());
 
         addDerivedKeyElement(dkSign.getdktElement());
 
