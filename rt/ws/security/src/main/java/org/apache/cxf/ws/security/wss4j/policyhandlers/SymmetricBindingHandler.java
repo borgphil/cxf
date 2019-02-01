@@ -283,6 +283,10 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
                         }
                     }
                 }
+
+                if (encr != null) {
+                    encr.clean();
+                }
             }
         } catch (RuntimeException ex) {
             LOG.log(Level.FINE, ex.getMessage(), ex);
@@ -408,8 +412,9 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
             }
 
             if (encrAbstractTokenWrapper.getToken() != null && !enc.isEmpty()) {
+                WSSecBase encr = null;
                 if (encrAbstractTokenWrapper.getToken().getDerivedKeys() == DerivedKeys.RequireDerivedKeys) {
-                    doEncryptionDerived(encrAbstractTokenWrapper, encrTok, tokIncluded, enc, false);
+                    encr = doEncryptionDerived(encrAbstractTokenWrapper, encrTok, tokIncluded, enc, false);
                 } else {
                     byte[] ephemeralKey = encrTok.getSecret();
                     SecretKey symmetricKey = null;
@@ -420,8 +425,10 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
                         KeyGenerator keyGen = KeyUtils.getKeyGenerator(symEncAlgorithm);
                         symmetricKey = keyGen.generateKey();
                     }
-                    doEncryption(encrAbstractTokenWrapper, encrTok, tokIncluded, enc, false, symmetricKey);
+                    encr = doEncryption(encrAbstractTokenWrapper, encrTok, tokIncluded, enc, false, symmetricKey);
                 }
+
+                encr.clean();
             }
         } catch (Exception e) {
             LOG.log(Level.FINE, e.getMessage(), e);
@@ -800,8 +807,11 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
 
             this.mainSigId = dkSign.getSignatureId();
 
+            dkSign.clean();
             return dkSign.getSignatureValue();
         }
+
+        dkSign.clean();
         return null;
     }
 
@@ -933,8 +943,12 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
             bottomUpElement = sig.getSignatureElement();
 
             this.mainSigId = sig.getId();
+
+            sig.clean();
             return sig.getSignatureValue();
         }
+
+        sig.clean();
         return null;
     }
 

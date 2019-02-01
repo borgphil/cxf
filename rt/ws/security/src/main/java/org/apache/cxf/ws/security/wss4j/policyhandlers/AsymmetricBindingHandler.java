@@ -229,15 +229,18 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
             }
 
             if (encToken != null) {
+                WSSecBase encr = null;
                 if (encToken.getToken() != null && !enc.isEmpty()) {
                     if (encToken.getToken().getDerivedKeys() == DerivedKeys.RequireDerivedKeys) {
-                        doEncryptionDerived(encToken, enc);
+                        encr = doEncryptionDerived(encToken, enc);
                     } else {
                         String symEncAlgorithm = abinding.getAlgorithmSuite().getAlgorithmSuiteType().getEncryption();
                         KeyGenerator keyGen = KeyUtils.getKeyGenerator(symEncAlgorithm);
                         SecretKey symmetricKey = keyGen.generateKey();
-                        doEncryption(encToken, enc, false, symmetricKey);
+                        encr = doEncryption(encToken, enc, false, symmetricKey);
                     }
+
+                    encr.clean();
                 }
                 assertTokenWrapper(encToken);
                 assertToken(encToken.getToken());
@@ -394,6 +397,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
 
         if (encrBase != null) {
             encryptTokensInSecurityHeader(encryptionToken, encrBase, symmetricKey);
+            encrBase.clean();
         }
     }
 
@@ -663,6 +667,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
             if (!attached && isTokenRequired(sigToken.getIncludeTokenType())) {
                 WSSecSignature sig = getSignatureBuilder(sigToken, attached, false);
                 sig.appendBSTElementToHeader();
+                sig.clean();
             }
             return;
         }
@@ -735,6 +740,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
 
                     mainSigId = dkSign.getSignatureId();
                 }
+                dkSign.clean();
             } catch (Exception ex) {
                 LOG.log(Level.FINE, ex.getMessage(), ex);
                 throw new Fault(ex);
@@ -781,6 +787,8 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
 
                 mainSigId = sig.getId();
             }
+
+            sig.clean();
         }
     }
 
