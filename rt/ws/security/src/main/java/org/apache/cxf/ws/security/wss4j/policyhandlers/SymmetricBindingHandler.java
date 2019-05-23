@@ -736,7 +736,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
         }
 
         //Set the algo info
-        dkSign.setSignatureAlgorithm(sbinding.getAlgorithmSuite().getSymmetricSignature());
+        dkSign.setSignatureAlgorithm(sbinding.getAlgorithmSuite().getAlgorithmSuiteType().getSymmetricSignature());
         dkSign.setSigCanonicalization(sbinding.getAlgorithmSuite().getC14n().getValue());
         AlgorithmSuiteType algType = sbinding.getAlgorithmSuite().getAlgorithmSuiteType();
         dkSign.setDigestAlgorithm(algType.getDigest());
@@ -912,7 +912,7 @@ public class SymmetricBindingHandler extends AbstractBindingBuilder {
 
         sig.setCustomTokenId(sigTokId);
         sig.setSecretKey(tok.getSecret());
-        sig.setSignatureAlgorithm(sbinding.getAlgorithmSuite().getSymmetricSignature());
+        sig.setSignatureAlgorithm(sbinding.getAlgorithmSuite().getAlgorithmSuiteType().getSymmetricSignature());
 
         boolean includePrefixes =
             MessageUtils.getContextualBoolean(

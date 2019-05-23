@@ -580,7 +580,7 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
         } else {
             sig.setCustomTokenValueType(WSS4JConstants.WSS_SAML_KI_VALUE_TYPE);
         }
-        sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAsymmetricSignature());
+        sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAlgorithmSuiteType().getAsymmetricSignature());
         sig.setSigCanonicalization(binding.getAlgorithmSuite().getC14n().getValue());
 
         Crypto crypto = secToken.getCrypto();
@@ -1900,7 +1900,7 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
             password = getPassword(user, token, WSPasswordCallback.SIGNATURE);
         }
         sig.setUserInfo(user, password);
-        sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAsymmetricSignature());
+        sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAlgorithmSuiteType().getAsymmetricSignature());
         AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
         sig.setDigestAlgo(algType.getDigest());
         sig.setSigCanonicalization(binding.getAlgorithmSuite().getC14n().getValue());
@@ -2061,7 +2061,7 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
         }
 
         //Set the algo info
-        dkSign.setSignatureAlgorithm(binding.getAlgorithmSuite().getSymmetricSignature());
+        dkSign.setSignatureAlgorithm(binding.getAlgorithmSuite().getAlgorithmSuiteType().getSymmetricSignature());
         dkSign.setSigCanonicalization(binding.getAlgorithmSuite().getC14n().getValue());
         AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
         dkSign.setDerivedKeyLength(algType.getSignatureDerivedKeyLength() / 8);
@@ -2153,7 +2153,7 @@ public abstract class AbstractBindingBuilder extends AbstractCommonBindingHandle
         sigTokId = XMLUtils.getIDFromReference(sigTokId);
         sig.setCustomTokenId(sigTokId);
         sig.setSecretKey(tok.getSecret());
-        sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getSymmetricSignature());
+        sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAlgorithmSuiteType().getSymmetricSignature());
         AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
         sig.setDigestAlgo(algType.getDigest());
         sig.setSigCanonicalization(binding.getAlgorithmSuite().getC14n().getValue());

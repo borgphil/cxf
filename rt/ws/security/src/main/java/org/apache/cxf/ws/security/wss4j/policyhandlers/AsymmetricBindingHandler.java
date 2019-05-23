@@ -689,7 +689,7 @@ public class AsymmetricBindingHandler extends AbstractBindingBuilder {
             dkSign.setTokenIdentifier(this.encryptedKeyId);
 
             // Set the algo info
-            dkSign.setSignatureAlgorithm(abinding.getAlgorithmSuite().getSymmetricSignature());
+            dkSign.setSignatureAlgorithm(abinding.getAlgorithmSuite().getAlgorithmSuiteType().getSymmetricSignature());
             dkSign.setSigCanonicalization(abinding.getAlgorithmSuite().getC14n().getValue());
             AlgorithmSuiteType algType = abinding.getAlgorithmSuite().getAlgorithmSuiteType();
             dkSign.setDigestAlgorithm(algType.getDigest());

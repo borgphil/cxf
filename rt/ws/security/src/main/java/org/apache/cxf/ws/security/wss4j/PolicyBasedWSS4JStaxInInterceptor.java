@@ -272,10 +272,10 @@ public class PolicyBasedWSS4JStaxInInterceptor extends WSS4JStaxInInterceptor {
                 for (AssertionInfo algorithmSuite : algorithmSuites) {
                     AlgorithmSuite algSuite = (AlgorithmSuite)algorithmSuite.getAssertion();
                     if (asymSignatureAlgorithm != null) {
-                        algSuite.setAsymmetricSignature(asymSignatureAlgorithm);
+                        algSuite.getAlgorithmSuiteType().setAsymmetricSignature(asymSignatureAlgorithm);
                     }
                     if (symSignatureAlgorithm != null) {
-                        algSuite.setSymmetricSignature(symSignatureAlgorithm);
+                        algSuite.getAlgorithmSuiteType().setSymmetricSignature(symSignatureAlgorithm);
                     }
                 }
             }

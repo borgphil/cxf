@@ -385,7 +385,7 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
             }
 
             dkSig.setSigCanonicalization(binding.getAlgorithmSuite().getC14n().getValue());
-            dkSig.setSignatureAlgorithm(binding.getAlgorithmSuite().getSymmetricSignature());
+            dkSig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAlgorithmSuiteType().getSymmetricSignature());
             dkSig.setAttachmentCallbackHandler(new AttachmentCallbackHandler(message));
             dkSig.setStoreBytesInAttachment(storeBytesInAttachment);
             dkSig.setExpandXopInclude(isExpandXopInclude());
@@ -499,7 +499,7 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
         }
 
         // Set the algo info
-        dkSign.setSignatureAlgorithm(algorithmSuite.getSymmetricSignature());
+        dkSign.setSignatureAlgorithm(algorithmSuite.getAlgorithmSuiteType().getSymmetricSignature());
         AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
         dkSign.setDerivedKeyLength(algType.getSignatureDerivedKeyLength() / 8);
         if (token.getVersion() == SPConstants.SPVersion.SP11) {
@@ -606,11 +606,11 @@ public class TransportBindingHandler extends AbstractBindingBuilder {
             }
 
             sig.setUserInfo(uname, password);
-            sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAsymmetricSignature());
+            sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAlgorithmSuiteType().getAsymmetricSignature());
         } else {
             crypto = getSignatureCrypto();
             sig.setSecretKey(secTok.getSecret());
-            sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getSymmetricSignature());
+            sig.setSignatureAlgorithm(binding.getAlgorithmSuite().getAlgorithmSuiteType().getSymmetricSignature());
         }
         sig.setSigCanonicalization(binding.getAlgorithmSuite().getC14n().getValue());
         AlgorithmSuiteType algType = binding.getAlgorithmSuite().getAlgorithmSuiteType();
